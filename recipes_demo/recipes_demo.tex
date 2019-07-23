@@ -1,0 +1,523 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Recipes demo for Code review},
+            pdfauthor={PennCHOP microbiome program, Scott Garrett Daniel},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+
+  \title{Recipes demo for Code review}
+    \author{PennCHOP microbiome program, Scott Garrett Daniel}
+      \date{\today}
+
+\usepackage{pdflscape}
+\usepackage{lscape}
+\usepackage{tikz}
+\usepackage{tikz-cd}
+\usepackage{color}
+\usepackage[colorinlistoftodos]{todonotes}
+
+\newcommand{\blandscape}{\begin{landscape}}
+\newcommand{\elandscape}{\end{landscape}}
+
+\newcommand{\bscript}{\begin{scriptsize}}
+\newcommand{\escript}{\end{scriptsize}}
+
+\newcommand{\stopdocument}{\end{document}} % \newcommand cannot define that starts with \end... so use \stopdocument instead of \enddocument
+
+\def\red{\textcolor{red}}
+\def\green{\textcolor{green}}
+\def\blue{\textcolor{blue}}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{3}
+}
+\includegraphics{logo_blk.png}\\
+\tableofcontents
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{### ================}
+\NormalTok{###   R packages}
+\NormalTok{### ================}
+\CommentTok{#This package will also help us more easily manipulate our data}
+\KeywordTok{library}\NormalTok{(tidyverse)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{### ================}
+\NormalTok{###   User defined functions}
+\NormalTok{### ================}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{### ===========================}
+\NormalTok{###   define constants}
+\NormalTok{### ===========================}
+
+\NormalTok{### setwd}
+\CommentTok{#fill in your project dir}
+\NormalTok{root_dir =}\StringTok{ ""}
+
+\NormalTok{### file path}
+\NormalTok{replace_me <-}\StringTok{ }\KeywordTok{file.path}\NormalTok{(root_dir, }\StringTok{""}\NormalTok{)}
+
+\NormalTok{### metadata}
+\NormalTok{metadata_fp <-}\StringTok{ }\KeywordTok{file.path}\NormalTok{(root_dir, }\StringTok{""}\NormalTok{ )}
+\end{Highlighting}
+\end{Shaded}
+
+Based on:
+\url{https://www.r-bloggers.com/how-to-use-recipes-package-from-tidymodels-for-one-hot-encoding-\%f0\%9f\%9b\%a0/}
+
+Since once of the best way to learn, is to explain, I want to share with
+you this quick introduction to recipes package, from the tidymodels
+family. It can help us to automatize some data preparation tasks.
+
+The overview is:
+
+How to create a recipe How to add a step How to do the prep Getting the
+data with juice! Apply the prep to new data What is the difference
+between bake and juice? Dealing with new values in recipes (step\_novel)
+Since I'm new to this package, if you have something to add just put in
+the comments
+
+Introduction If you are new to R or you do a 1-time analysis, you could
+not see the main advantage of this, which is -in my opinion- to have
+most of the data preparation steps in one place. This way is easier to
+split between dev and prod.
+
+Dev: The stage in which we create the model Prod: The moment in which we
+run the model with new data The other big advantage is it follows the
+tidy philosophy, so many things will be familiar.
+
+How to use recipes for one hot encoding It is focused on one hot
+encoding, but many other functions like scaling, applying PCA and others
+can be performed.
+
+But first, what is one hot encoding?
+
+It's a data preparation technique to convert all the categorical
+variables into numerical, by assigning a value of 1 when the row belongs
+to the category. If the variable has 100 unique values, the final result
+will contain 100 columns.
+
+That's why it is a good practice to reduce the cardinality of the
+variable before continuing Learn more about it in the High Cardinality
+Variable in Predictive Modeling from the Data Science Live Book.
+
+Let's start the example with recipes!
+
+1st -- How to create a recipe
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(recipes)}
+\KeywordTok{library}\NormalTok{(tidyverse)}
+
+\KeywordTok{set.seed}\NormalTok{(}\FloatTok{3.1415}\NormalTok{)}
+\NormalTok{iris_tr=}\KeywordTok{sample_frac}\NormalTok{(iris, }\DataTypeTok{size =} \FloatTok{0.7}\NormalTok{)}
+
+\NormalTok{rec =}\StringTok{ }\KeywordTok{recipe}\NormalTok{( }\OperatorTok{~}\StringTok{ }\NormalTok{., }\DataTypeTok{data =}\NormalTok{ iris_tr)}
+
+\NormalTok{rec}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Data Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##  predictor          5
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{summary}\NormalTok{(rec)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 5 x 4
+##   variable     type    role      source  
+##   <chr>        <chr>   <chr>     <chr>   
+## 1 Sepal.Length numeric predictor original
+## 2 Sepal.Width  numeric predictor original
+## 3 Petal.Length numeric predictor original
+## 4 Petal.Width  numeric predictor original
+## 5 Species      nominal predictor original
+\end{verbatim}
+
+The formula \textasciitilde{} ., specifies that all the variables are
+predictors (with no outcomes).
+
+Please note now we have two different data types, numeric and nominal
+(not factor nor character).
+
+2nd -- How to add a step Now we add the step to create the dummy
+variables, or the one hot encoding, which can be seen as the same.
+
+When we do the one hot encoding (one\_hot = T), all the levels will be
+present in the final result. Conversely, when we create the dummy
+variables, we could have all of the variables, or one less (to avoid the
+multi-correlation issue).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rec_}\DecValTok{2}\NormalTok{ =}\StringTok{ }\NormalTok{rec }\OperatorTok{%>%}\StringTok{ }\KeywordTok{step_dummy}\NormalTok{(Species, }\DataTypeTok{one_hot =}\NormalTok{ T)}
+
+\NormalTok{rec_}\DecValTok{2}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Data Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##  predictor          5
+## 
+## Operations:
+## 
+## Dummy variables from Species
+\end{verbatim}
+
+Now we see the dummy step.
+
+3rd -- How to do the prep prep is like putting all the ingredients
+together, but we didn't cook yet!
+
+It generates the metadata to do the data preparation.
+
+As we can see here:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{d_prep=rec_}\DecValTok{2} \OperatorTok{%>%}\StringTok{ }\KeywordTok{prep}\NormalTok{(}\DataTypeTok{training =}\NormalTok{ iris_tr, }\DataTypeTok{retain =}\NormalTok{ T)}
+
+\NormalTok{d_prep}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Data Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##  predictor          5
+## 
+## Training data contained 105 data points and no missing data.
+## 
+## Operations:
+## 
+## Dummy variables from Species [trained]
+\end{verbatim}
+
+Note we are in the ``training'' or dev stage. That's why we see the
+parameter training.
+
+We will see retain = T in the next step.
+
+Checking:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{summary}\NormalTok{(d_prep)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 7 x 4
+##   variable           type    role      source  
+##   <chr>              <chr>   <chr>     <chr>   
+## 1 Sepal.Length       numeric predictor original
+## 2 Sepal.Width        numeric predictor original
+## 3 Petal.Length       numeric predictor original
+## 4 Petal.Width        numeric predictor original
+## 5 Species_setosa     numeric predictor derived 
+## 6 Species_versicolor numeric predictor derived 
+## 7 Species_virginica  numeric predictor derived
+\end{verbatim}
+
+Voila! We have the 3-new derived columns (one hot), and it removed the
+original Species.
+
+4th -- Getting the data with juice! Using juice function:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{d2=}\KeywordTok{juice}\NormalTok{(d_prep)}
+
+\KeywordTok{head}\NormalTok{(d2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 6 x 7
+##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species_setosa
+##          <dbl>       <dbl>        <dbl>       <dbl>          <dbl>
+## 1          5           3            1.6         0.2              1
+## 2          6.9         3.2          5.7         2.3              0
+## 3          6.3         3.3          4.7         1.6              0
+## 4          5.3         3.7          1.5         0.2              1
+## 5          6.3         2.3          4.4         1.3              0
+## 6          6.7         3            5.2         2.3              0
+## # ... with 2 more variables: Species_versicolor <dbl>,
+## #   Species_virginica <dbl>
+\end{verbatim}
+
+juice worked because we retained the training data in the 3rd step
+(retain = T). Otherwise it would have returned:
+
+Error: Use retain = TRUE in prep to be able to extract the training set
+
+5th -- Apply the prep to new data Now imagine we have new data as
+follows:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{iris_new=}\KeywordTok{sample_n}\NormalTok{(iris, }\DataTypeTok{size =} \DecValTok{5}\NormalTok{) }\CommentTok{# taking 5 random rows}
+
+\NormalTok{d_baked=}\KeywordTok{bake}\NormalTok{(d_prep, }\DataTypeTok{new_data =}\NormalTok{ iris_new)}
+
+\NormalTok{d_baked}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 5 x 7
+##   Sepal.Length Sepal.Width Petal.Length Petal.Width Species_setosa
+##          <dbl>       <dbl>        <dbl>       <dbl>          <dbl>
+## 1          5.3         3.7          1.5         0.2              1
+## 2          4.8         3.4          1.6         0.2              1
+## 3          4.6         3.6          1           0.2              1
+## 4          6.5         3            5.2         2                0
+## 5          6.3         2.8          5.1         1.5              0
+## # ... with 2 more variables: Species_versicolor <dbl>,
+## #   Species_virginica <dbl>
+\end{verbatim}
+
+It worked!
+
+bake receives the prep object (d\_prep) and it applies to the newdata
+(iris\_new)
+
+What is the difference between bake and juice? From this perspective
+given the training data, following data frames are the same:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{d_tr_}\DecValTok{1}\NormalTok{=}\KeywordTok{bake}\NormalTok{(d_prep, }\DataTypeTok{new_data =}\NormalTok{ iris_tr)}
+\NormalTok{d_tr_}\DecValTok{2}\NormalTok{=d2=}\KeywordTok{juice}\NormalTok{(d_prep) }\CommentTok{# with retain=T}
+
+\KeywordTok{identical}\NormalTok{(d_tr_}\DecValTok{1}\NormalTok{, d_tr_}\DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] TRUE
+\end{verbatim}
+
+Dealing with new values in recipes Simulate a new value:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{new_row=iris[}\DecValTok{1}\NormalTok{,] }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{Species=}\KeywordTok{as.character}\NormalTok{(Species))}
+\NormalTok{new_row[}\DecValTok{1}\NormalTok{, }\StringTok{"Species"}\NormalTok{]=}\StringTok{"i will break your code"}
+
+\NormalTok{new_row}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Sepal.Length Sepal.Width Petal.Length Petal.Width                Species
+## 1          5.1         3.5          1.4         0.2 i will break your code
+\end{verbatim}
+
+We use bake to convert the new data set:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{d2_b=}\KeywordTok{bake}\NormalTok{(d_prep, }\DataTypeTok{new_data =}\NormalTok{ new_row)}
+\end{Highlighting}
+\end{Shaded}
+
+The solution! Use step\_novel (Thanks to Max Kuhn)
+
+When we do the prep, we have to add step\_novel. So any new value will
+be assigned to the \_new category.
+
+We will start right from the beginning:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rec_2_bis =}\StringTok{ }\KeywordTok{recipe}\NormalTok{( }\OperatorTok{~}\StringTok{ }\NormalTok{., }\DataTypeTok{data =}\NormalTok{ iris_tr) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{step_novel}\NormalTok{(Species) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{step_dummy}\NormalTok{(Species, }\DataTypeTok{one_hot =}\NormalTok{ T)}
+
+\NormalTok{prep_bis =}\StringTok{ }\KeywordTok{prep}\NormalTok{(rec_2_bis, }\DataTypeTok{training =}\NormalTok{ iris_tr)}
+\end{Highlighting}
+\end{Shaded}
+
+Get to final data, and check it:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{processed =}\StringTok{ }\KeywordTok{bake}\NormalTok{(prep_bis, iris_tr)}
+
+\NormalTok{funModeling}\OperatorTok{::}\KeywordTok{df_status}\NormalTok{(processed)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##             variable q_zeros p_zeros q_na p_na q_inf p_inf    type unique
+## 1       Sepal.Length       0    0.00    0    0     0     0 numeric     32
+## 2        Sepal.Width       0    0.00    0    0     0     0 numeric     23
+## 3       Petal.Length       0    0.00    0    0     0     0 numeric     42
+## 4        Petal.Width       0    0.00    0    0     0     0 numeric     20
+## 5     Species_setosa      68   64.76    0    0     0     0 numeric      2
+## 6 Species_versicolor      69   65.71    0    0     0     0 numeric      2
+## 7  Species_virginica      73   69.52    0    0     0     0 numeric      2
+## 8        Species_new     105  100.00    0    0     0     0 numeric      1
+\end{verbatim}
+
+Please note that Species\_new has been automatically created (with
+zeros).
+
+This ensures it runs well once in production.
+
+Now let's see what happen when we have the new value:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{new_row_}\DecValTok{2}\NormalTok{=}\KeywordTok{bake}\NormalTok{(prep_bis, }\DataTypeTok{new_data =}\NormalTok{ new_row)}
+
+\NormalTok{new_row_}\DecValTok{2} \OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(Species_new)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   Species_new
+##         <dbl>
+## 1           1
+\end{verbatim}
+
+It works!
+
+Conclusions The recipes package seems to be a good way to standardize
+certain data preparation tasks. Probably one of the strongest points in
+R, alongside the dplyr package.
+
+Take care of the data pipeline, it is what interviewers will ask you
+for.
+
+
+\end{document}

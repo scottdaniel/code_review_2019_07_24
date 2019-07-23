@@ -1,0 +1,474 @@
+---
+title: "purr::map() demo for Code review"
+author: "PennCHOP microbiome program, Scott Garrett Daniel"
+date: \today
+output: 
+    pdf_document:
+        template: toc_after.tex
+        keep_tex: true
+        toc: true
+        toc_depth: 3
+        includes:
+            in_header: TeX_packages_commands.sty
+---
+
+![' '](logo_blk.png)\
+
+\tableofcontents
+
+<!-- knitr setup -->
+```{r knitr setup, echo=FALSE}
+### ================
+###   knitr setup
+### ================
+library(knitr)
+knitr::opts_chunk$set(
+	echo = T,
+	fig.align = "center",
+	message = FALSE,
+	warning = FALSE,
+	cache = TRUE,
+	dpi = 100,
+	tidy = FALSE
+)
+```
+<!-- End, knitr setup -->
+
+# Packages and setting up data
+
+Based on: https://aosmith.rbind.io/2019/07/22/automate-model-fitting-with-loops/
+
+```{r}
+#devtools::install_github("thomasp85/patchwork")
+library(purrr) # v. 0.3.2
+library(ggplot2) # v. 3.2.0
+library(patchwork) # v. 0.0.1, github only, see above ^
+library(broom) # v. 0.5.2
+
+dat = structure(list(group = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 1L, 
+1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 
+2L, 2L, 2L, 2L, 2L, 2L, 2L), .Label = c("a", "b"), class = "factor"), 
+    resp = c(10.48, 9.87, 11.1, 8.56, 11.15, 9.53, 8.99, 10.06, 
+    11.02, 10.57, 11.85, 10.11, 9.25, 11.66, 10.72, 8.34, 10.58, 
+    10.47, 9.46, 11.13, 8.35, 9.69, 9.82, 11.47, 9.13, 11.53, 
+    11.05, 11.03, 10.84, 10.22), slp = c(38.27, 46.33, 44.29, 
+    35.57, 34.78, 47.81, 50.45, 46.31, 47.82, 42.07, 31.75, 65.65, 
+    47.42, 41.51, 38.69, 47.84, 46.22, 50.66, 50.69, 44.09, 47.3, 
+    52.53, 53.63, 53.38, 27.34, 51.83, 56.63, 32.99, 77.5, 38.24
+    ), grad = c(0.3, 0.66, 0.57, 0.23, 0.31, 0.48, 0.5, 0.49, 
+    2.41, 0.6, 0.27, 0.89, 2.43, 1.02, 2.17, 1.38, 0.17, 0.47, 
+    1.1, 3.28, 6.14, 3.8, 4.35, 0.85, 1.13, 1.11, 2.93, 1.13, 
+    4.52, 0.13)), class = "data.frame", row.names = c(NA, -30L) )
+head(dat)
+
+```
+
+# Function for model generation
+
+```{r}
+ttest_fun = function(response) {
+  form = paste(response, "~ group")
+  lm(as.formula(form), data = dat)
+}
+ttest_fun(response = "resp")
+```
+
+# Set names for vars we want to model
+
+```{r}
+vars = names(dat)[2:4]
+vars
+
+vars = set_names(vars)
+vars
+```
+
+# Map the model to each var
+
+```{r}
+models = vars %>%
+     map(ttest_fun)
+models
+
+#same thing rather than set_names in above code block
+# vars %>%
+#      set_names() %>%
+#      map(ttest_fun)
+```
+
+# Create a ggplot graph function
+
+```{r}
+resid_plots = function(model, modelname) {
+     output = augment(model) #extract residuals and fitted values via broom::augment()
+     
+     res.v.fit = ggplot(output, aes(x = .fitted, y = .resid) ) +
+          geom_point() +
+          theme_bw(base_size = 16)
+     
+     res.box = ggplot(output, aes(x = "", y = .resid) ) +
+          geom_boxplot() +
+          theme_bw(base_size = 16) +
+          labs(x = NULL)
+     
+     res.v.fit + res.box +
+          plot_annotation(title = paste("Residuals plots for", modelname) ) 
+# plot_annotation is part of patchwork and glues together the individual plots
+}
+```
+
+# Loop through models and graph each one
+
+```{r}
+
+#for one model:
+#resid_plots(model = models[[1]], modelname = names(models)[1])
+
+#loop through all models
+residplots = imap(models, resid_plots)
+residplots
+
+```
+
+# Updating one of the models or subsetting
+
+```{r}
+gradmod = ttest_fun("log(grad)")
+
+models$log_grad = gradmod
+models$grad = NULL
+models
+
+models[!names(models) %in% "slp"]
+
+```
+
+# Extracting statistics from the models
+
+```{r}
+res_anova = map_dfr(models, tidy, conf.int = TRUE, .id = "variable") 
+
+#map_dfr and map_dfc return data frames by row-binding and col-binding respectively
+res_anova
+```
+
+# Example from one of the projects I'm working on
+
+<!-- R packages -->
+```{r R packages, message=FALSE, include=FALSE}
+### ================
+###   R packages
+### ================
+library(reshape2)
+#This package will also help us more easily manipulate our data
+library(dplyr)
+library(magrittr)
+library(qiimer)
+library(pander)
+#Analyses of Phylogenetics and Evolution package. Required for tree calculations to be used with phyloseq
+library(ape)
+#The vegan package provides tools for descriptive community ecology. It has most basic functions of diversity analysis, community ordination and dissimilarity analysis. In general, this package is used for Bray-Curtis and Jaccard analyses.
+library(vegan)
+#Graphing package used in phyloseq. To edit the default setting of a plot, you need to use functions in this package.
+library(ggplot2)
+#This package is used to calculate and plot Venn diagrams as well as heatmaps
+library(gplots)
+library(pheatmap)
+#This package will help us more easily manipulate our data, which are matrices
+library(tidyr)
+library(usedist)
+library(readr)
+library(tibble)
+#Linear mixed-effects models like repeated measures analysis
+library(lme4)
+
+```
+
+<!-- user defined functions -->
+```{r user defined functions, include=FALSE}
+### ================
+###   User defined functions
+### ================
+
+logit <- function(x) {
+  y = log(x / (1-x))
+  
+  return(y)
+  
+}
+
+run_polya <- function(data, cols) {
+  
+  pfit = optim_polya(t(data[,cols]))
+  
+  data.frame(par = pfit$par, value = pfit$value)
+  
+}
+
+run_test_polya <- function(data, cat, pfitpar) {
+  
+  counts <- as.integer(unlist(data[,cat]))
+  #print(counts)
+  
+  alphas <- as.double(unlist(data[,pfitpar]))
+  #print(alphas)
+  
+  p.value = (1 - ppolya_marginal(counts, alphas, log.p = FALSE))
+  
+  data.frame(p.value = p.value)
+  
+}
+
+filter_low_coverage <- function(props, frac_cutoff=0.6, min_ab=0, na.rm = T){
+  frac_nonzero <- function (x) sum(x > min_ab, na.rm = na.rm) / length(x)
+  apply(props, 1, frac_nonzero) >= frac_cutoff
+}
+
+filter_low_counts <- function(count_matrix, min_count=5) {
+  keep <- count_matrix > min_count
+  return(count_matrix[keep])
+}
+
+as_proportion <- function (x) x / sum(x)
+
+###=====
+###  make_pcoa_plot <- function(uu, s, shape_by, color_by, title)
+###  uu: distance, s: mapping file, shape_by: variable used for shape, color_by: variable used for color
+###=====
+
+make_pcoa_plot <- function(dm, s, shape_by, color_by) {
+  dm <- usedist::dist_subset(dm, s$SampleID)
+  pc <- pcoa(dm)
+  pc_df <- merge(s, pc$vectors[, 1:3], by.x="SampleID", by.y="row.names")
+  pc_pct <- round(pc$values$Relative_eig * 100)
+  
+  pcoa_plot = ggplot(pc_df, aes(x=Axis.1, y=Axis.2)) +
+    theme_bw() +
+    scale_shape_discrete(name=sub("_", " ", shape_by)) + 
+    scale_colour_discrete(name=sub("_", " ", color_by)) +
+    labs(
+      x=paste0("PCoA axis 1 (", pc_pct[1], "%)"),
+      y=paste0("PCoA axis 2 (", pc_pct[2], "%)")
+    )
+  
+  if (is.null(shape_by) & !is.null(color_by)) {
+    pcoa_plot <- pcoa_plot + geom_point(aes(colour=factor(get(color_by))))
+  } else if (!is.null(shape_by) & !is.null(color_by)) {
+    pcoa_plot <- pcoa_plot + geom_point(aes(colour=factor(get(color_by)), shape=factor(get(shape_by))))
+  } else {
+    pcoa_plot <- pcoa_plot + geom_point()
+  }
+  return(pcoa_plot)
+}
+
+###=====
+###  heatmap_grouped <- function(genus_props, heatmap_s, grps = c("study_group", "study_day"), fname=NULL, thre=0.8, option=1)
+###  option=1: rows_to_keep <- filter_low_coverage(heatmap_props, perc_cutoff=thre) ## taxa found in at least 80% of samples
+###  option=2: rows_to_keep <- apply(heatmap_props,1,max) >= 0.01 ## taxa with abundance in any sample exceeding 1%
+###=====
+
+heatmap_grouped <- function(summed_props, heatmap_s, grps = c("study_group", "study_day"), fname=NULL, thre=0.8, option=1, prop_cut=0.01, satu_limit=0.4){
+  
+  #color = saturated_rainbow(101)
+  color = saturated_rainbow(101, saturation_limit=satu_limit)
+  breaks = c(0, 1e-10, seq(0.001, 1, length.out = 100))
+  
+  heatmap_props <- summed_props[,heatmap_s$SampleID]
+  
+  if (option == 1) {
+    rows_to_keep <- filter_low_coverage(heatmap_props, frac_cutoff=thre) 
+  } else if (option == 2) {
+    rows_to_keep <- apply(heatmap_props,1,max) >= prop_cut 
+  }
+  heatmap_props <- heatmap_props[rows_to_keep,]
+  
+  ## group the SampleIDs
+  heatmap_s %>% arrange_(.dots=grps)
+  heatmap_props <- heatmap_props[, heatmap_s$SampleID]
+  
+  ## update the annotation
+  annc <- heatmap_s[,grps] %>% as.data.frame()
+  rownames(annc) <- heatmap_s$SampleID
+  colnames(annc) <- grps
+  
+  ## heatmap time
+  if (!is.null(fname)) {
+    pheatmap(heatmap_props, annotation = annc, color = color, breaks = breaks, filename = fname, 
+             fontsize_col = 8, fontsize_row = 8, cluster_cols = FALSE, cluster_rows = FALSE,cellheight = 8, cellwidth = 8)
+  } else { pheatmap(heatmap_props, annotation = annc, color = color, breaks = breaks, 
+             fontsize_col = 8, fontsize_row = 8, cluster_cols = FALSE, cluster_rows = FALSE,cellheight = 8, cellwidth = 8) }
+
+}
+#simple linear model functions
+# tidy lm for the lmTest object
+tidy_lm <- function(lm_test) {
+  mod <- summary(lm_test)
+  data.frame(term  = rownames(mod$coefficients), mod$coefficients, row.names=NULL)
+}
+
+# count based lm (for taxa abundances)
+run_lm <- function(cts_toTest, s_toTest, form1, p_cutoff) {
+  cts_toTest[,s_toTest$SampleID] %>%
+    melt() %>%
+    mutate(value = value+1) %>%
+    setNames(c("Taxa", "SampleID", "Abundance")) %>%
+    merge(s_toTest, by="SampleID") %>%
+    mutate(props = Abundance / Read_Counts) %>%
+    mutate(props100 = props * 100) %>%
+    mutate(props_logit = log(props/(1-props))) %>%
+    group_by(Taxa) %>%
+    mutate(props_logit_scaled = scale(props_logit)[,1]) %>%
+    do(tidy_lm(lm(as.formula(form1), data=., na.action=na.omit))) %>%
+    setNames(c("Taxa","term","Estimate","Std.Error","t.value","p.value")) %>%
+    ungroup() %>%
+    filter(term != '(Intercept)') %>%
+    group_by(term) %>%
+    mutate(fdr = p.adjust(p.value, method="BH")) %>%
+    ungroup() %>%
+    filter(p.value < p_cutoff) 
+}
+
+# just get the lm itself
+get_lm <- function(props_toTest, s_toTest, form1) {
+  props_toTest[,s_toTest$SampleID] %>%
+    melt() %>%
+    mutate(value = value+1) %>%
+    setNames(c("Taxa", "SampleID", "Abundance")) %>%
+    merge(s_toTest, by="SampleID") %>%
+    mutate(props = Abundance / read_counts) %>%
+    mutate(props100 = props * 100) %>%
+    mutate(props_logit = log(props/(1-props))) %>%
+    group_by(Taxa) %>%
+    mutate(props_logit_scaled = scale(props_logit)[,1]) %>%
+    lm(as.formula(form1), data=., na.action=na.omit)
+}
+
+#for diversity measurements relating to factors without random effects
+diversity_lms <- function(formula1, samples_df) {
+  
+  sub_df <- samples_df %>%
+    filter(Keep)
+  
+  formula_string <- paste(formula1)
+  
+  lemodel <- lm(formula(formula_string), data = sub_df)
+  
+  return(as.data.frame(summary(lemodel)$coefficients))
+
+}
+
+#same as lm but with random effects
+diversity_lmers <- function(formula1, random_effect, samples_df) {
+  
+  sub_df <- samples_df %>%
+    filter(Keep)
+  
+  rand_form <- paste0("+ (1|", random_effect, ")")
+  
+  formula_string <- paste(formula1, rand_form)
+  
+  mixedmodel <- lmerTest::lmer(formula(formula_string), data = sub_df)
+  
+  return(as.data.frame(summary(mixedmodel)$coefficients))
+
+}
+
+#linear mixed-effect model functions
+# tidy lmer for the lmTest object
+tidy_lmer <- function(lmer_test) {
+  mod <- summary(lmer_test)
+  data.frame(term  = rownames(mod$tTable), mod$tTable, row.names=NULL)
+}
+
+# count based lmer (for taxa abundances) with random effects
+run_lmer <- function(props_toTest, s_toTest, form1, rep_mes_label, p_cutoff) {
+  rep_mes_form <- paste("~ 1 |", rep_mes_label)
+  props_toTest[,s_toTest$SampleID] %>%
+    melt() %>%
+    mutate(value = value+1) %>%
+    setNames(c("Taxa", "SampleID", "Abundance")) %>%
+    merge(s_toTest, by="SampleID") %>%
+    mutate(props = Abundance / Read_Counts) %>%
+    mutate(props100 = props * 100) %>%
+    mutate(props_logit = log(props/(1-props))) %>%
+    group_by(Taxa) %>%
+    mutate(props_logit_scaled = scale(props_logit)[,1]) %>%
+    do(tidy_lmer(nlme::lme(as.formula(form1), random = as.formula(rep_mes_form), data=., na.action=na.omit))) %>%
+    ungroup() %>%
+    filter(term != '(Intercept)') %>%
+    group_by(term) %>%
+    mutate(fdr = p.adjust(p.value, method="BH")) %>%
+    ungroup() %>%
+    filter(p.value<p_cutoff) 
+}
+
+#just get the lmer
+get_lmer <- function(props_toTest, s_toTest, form1, rep_mes_label, p_cutoff) {
+  rep_mes_form <- paste("~ 1 |", rep_mes_label)
+  props_toTest[,s_toTest$SampleID] %>%
+    melt() %>%
+    mutate(value = value+1) %>%
+    setNames(c("Taxa", "SampleID", "Abundance")) %>%
+    merge(s_toTest, by="SampleID") %>%
+    mutate(props = Abundance / read_counts) %>%
+    mutate(props100 = props * 100) %>%
+    mutate(props_logit = log(props/(1-props))) %>%
+    group_by(Taxa) %>%
+    mutate(props_logit_scaled = scale(props_logit)[,1]) %>%
+    nlme::lme(as.formula(form1), random = as.formula(rep_mes_form), data=., na.action=na.omit) %>%
+    ungroup() %>%
+    filter(term != '(Intercept)') %>%
+    group_by(term) %>%
+    mutate(fdr = p.adjust(p.value, method="BH")) %>%
+    ungroup() %>%
+    filter(p.value<p_cutoff) 
+}
+```
+
+## Sample data
+
+```{r include=FALSE}
+s <- read_tsv("sample_data.tsv")
+```
+
+## Important response and predictor variables
+
+```{r}
+#in 16S bacterial data, we care about how the diversity changes from one condition to the next
+responses = c("shannon", "richness", "faith_pd")
+predictors = c("Location", "study_day")
+
+```
+
+## Modify ttest function
+
+```{r}
+
+ttest_funs = function(response, predictor) {
+  
+  form = paste0(response, " ~ ", predictor)
+  lm(as.formula(form), data = s)
+  
+}
+
+```
+
+## Run it!
+
+```{r}
+
+predictors = set_names(predictors,predictors)
+responses = set_names(responses,responses)
+
+for (x in predictors) {
+  responses %>%
+    map(~ ttest_funs(.,x))
+}
+
+#arrghh doesn't work
+
+#map2(responses, predictors, ~ ttest_funs(.x,.y))
+
+#ttest_fun(..1, ..2)
+```
+
