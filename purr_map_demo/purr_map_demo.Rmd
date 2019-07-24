@@ -146,7 +146,7 @@ models[!names(models) %in% "slp"]
 # Extracting statistics from the models
 
 ```{r}
-res_anova = map_dfr(models, tidy, conf.int = TRUE, .id = "variable") 
+res_anova = map_dfr(models, tidy, conf.int = TRUE, .id = "thingy") #
 
 #map_dfr and map_dfc return data frames by row-binding and col-binding respectively
 res_anova
@@ -428,6 +428,7 @@ get_lmer <- function(props_toTest, s_toTest, form1, rep_mes_label, p_cutoff) {
 ## Sample data
 
 ```{r include=FALSE}
+library(tidyverse)
 s <- read_tsv("sample_data.tsv")
 ```
 
@@ -464,6 +465,11 @@ for (x in predictors) {
   responses %>%
     map(~ ttest_funs(.,x))
 }
+
+#R for data science chapter that might help with this
+#https://r4ds.had.co.nz/many-models.html#introduction-17
+
+#maybe try something like gather
 
 #arrghh doesn't work
 
