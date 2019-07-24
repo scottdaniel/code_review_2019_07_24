@@ -429,7 +429,9 @@ get_lmer <- function(props_toTest, s_toTest, form1, rep_mes_label, p_cutoff) {
 
 ```{r include=FALSE}
 library(tidyverse)
-s <- read_tsv("sample_data.tsv")
+s <- read_tsv("sample_data.tsv") %>%
+  filter(!is.na(Location)) %>%
+  filter(!is.na(study_day))
 ```
 
 ## Important response and predictor variables
@@ -461,10 +463,17 @@ ttest_funs = function(response, predictor) {
 predictors = set_names(predictors,predictors)
 responses = set_names(responses,responses)
 
-for (x in predictors) {
-  responses %>%
-    map(~ ttest_funs(.,x))
-}
+pred_rep = rep(predictors, length(responses))
+resp_rep = rep(responses, length(predictors))
+
+models <- map2(resp_rep, pred_rep, ~ ttest_funs(.x,.y))
+
+# for (x in predictors) {
+#   responses %$%
+#     thing <- map(.f = ~ ttest_funs(.,x))
+# }
+
+#temp <- gather(s, key = "key", value = "value")
 
 #R for data science chapter that might help with this
 #https://r4ds.had.co.nz/many-models.html#introduction-17
@@ -473,7 +482,7 @@ for (x in predictors) {
 
 #arrghh doesn't work
 
-#map2(responses, predictors, ~ ttest_funs(.x,.y))
+#
 
 #ttest_fun(..1, ..2)
 ```
